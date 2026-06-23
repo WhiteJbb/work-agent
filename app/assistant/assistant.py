@@ -29,7 +29,6 @@ DESCRIPTIONS = {
     "todo": "다음 할 일 제안",
     "portfolio": "포트폴리오 초안 생성",
     "resume": "이력서/자기소개서 초안 생성",
-    "wiki-query": "wiki 검색",
     "capture-session": "작업 세션 노트 저장",
 }
 
@@ -96,14 +95,6 @@ class Assistant:
     # ----- 3) 실행 -----
     def execute(self, intent: Intent) -> str:
         cmd = intent.command
-
-        if cmd == "wiki-query":
-            from app.agents.wiki_agent import build_wiki_agent
-            try:
-                agent = build_wiki_agent()
-                return agent.query(intent.arg or "")
-            except RuntimeError as e:
-                return f"wiki 검색 실패: {e}"
 
         if cmd == "capture-session":
             from app.agents import CaptureAgent

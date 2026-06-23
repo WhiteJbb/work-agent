@@ -1,9 +1,9 @@
-"""파이프라인 개선 사항 테스트 — dedup, interactive apply, promote+wiki, weekly-distill."""
+"""파이프라인 개선 사항 테스트 — dedup, interactive apply, weekly-distill."""
 
 import json
 from datetime import datetime, timedelta
 from pathlib import Path
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 import pytest
 
@@ -162,46 +162,3 @@ def test_daily_distill_saves_daily_digest(tmp_path):
     assert "Daily Digest" in result.digest_path.read_text(encoding="utf-8")
 
 
-# ── promote → wiki 자동 연동 (CLI 레벨) ─────────────────────────────────────
-
-def test_promote_candidate_cli_calls_wiki_ingest(tmp_path):
-    from typer.testing import CliRunner
-    from app import cli
-    from app.services.candidate_writer import CandidateWriter
-    import frontmatter
-
-    # knowledge 후보 파일 생성
-    writer = CandidateWriter(vault_dir=tmp_path, now=datetime(2026, 6, 23))
-    spec = CandidateSpec(kind="knowledge", title="테스트 지식", body="내용", source_refs=[])
-    result = writer.write(spec)
-
-    runner = CliRunner()
-    with patch("app.cli.get_settings") as mock_settings, \
-         patch("app.agents.wiki_agent.build_wiki_agent") as mock_wiki:
-        mock_settings.return_value = _settings(tmp_path)
-        mock_wiki.return_value = MagicMock(ingest=MagicMock(return_value="wiki 1개 갱신"))
-
-        response = runner.invoke(cli.app, ["promote-candidate", result.rel_path])
-
-    assert response.exit_code == 0
-    assert "승격 완료" in response.output
-    mock_wiki.assert_called_once()
-
-
-def test_promote_candidate_no_wiki_flag(tmp_path):
-    from typer.testing import CliRunner
-    from app import cli
-
-    writer = CandidateWriter(vault_dir=tmp_path, now=datetime(2026, 6, 23))
-    spec = CandidateSpec(kind="knowledge", title="테스트 지식2", body="내용", source_refs=[])
-    result = writer.write(spec)
-
-    runner = CliRunner()
-    with patch("app.cli.get_settings") as mock_settings, \
-         patch("app.agents.wiki_agent.build_wiki_agent") as mock_wiki:
-        mock_settings.return_value = _settings(tmp_path)
-
-        response = runner.invoke(cli.app, ["promote-candidate", result.rel_path, "--no-wiki"])
-
-    assert response.exit_code == 0
-    mock_wiki.assert_not_called()
