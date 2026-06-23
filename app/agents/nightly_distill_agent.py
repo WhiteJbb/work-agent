@@ -84,8 +84,8 @@ class NightlyDistillAgent:
         label = "Weekly Digest" if weekly else "Daily Digest"
         lines = [f"# {label} — {date}", ""]
 
-        # 오늘 한 일: session 노트 제목 수집
-        sessions = self._today_sessions()
+        # 이번 기간 session 노트 수집 (weekly면 7일치, daily면 오늘만)
+        sessions = self._week_sessions() if weekly else self._today_sessions()
         lines += ["## 오늘 한 일", ""]
         if sessions:
             for s in sessions:
@@ -156,6 +156,17 @@ class NightlyDistillAgent:
             if n.path.startswith("10_Worklog/Daily/")
             and "session" in Path(n.path).name.lower()
             and str(n.metadata.get("created_at") or n.metadata.get("date") or "")[:10] == today
+        ]
+
+    def _week_sessions(self) -> list[WikiNote]:
+        from datetime import timedelta
+        cutoff = ((self.now or datetime.now()) - timedelta(days=_WEEKLY_LOOKBACK_DAYS)).strftime("%Y-%m-%d")
+        notes = self.wiki_service.scan_notes()
+        return [
+            n for n in notes
+            if n.path.startswith("10_Worklog/Daily/")
+            and "session" in Path(n.path).name.lower()
+            and str(n.metadata.get("created_at") or n.metadata.get("date") or "")[:10] >= cutoff
         ]
 
     def _save_digest(self, digest_text: str, weekly: bool = False) -> tuple[Path | None, str]:

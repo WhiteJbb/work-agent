@@ -72,7 +72,7 @@ class CandidateWriter:
                 if (today - file_date).days > _DEDUP_LOOKBACK_DAYS:
                     continue
             except ValueError:
-                pass
+                continue  # 날짜 파싱 실패 파일은 lookback 대상에서 제외
 
             try:
                 existing = frontmatter.loads(md_path.read_text(encoding="utf-8"))

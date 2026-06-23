@@ -215,7 +215,7 @@ def main():
             info(f"raw 기록 {status['raw']}개 → distill-today 실행 권장")
         elif status["candidates"] > 0 and not status["last_distill"]:
             info(f"후보 {status['candidates']}개 대기 중 → list-candidates 로 검토 권장")
-        elif status["raw"] > 0 and status["last_distill"] < time.strftime("%Y-%m-%d"):
+        elif status["raw"] > 0 and status["last_distill"] and status["last_distill"] < time.strftime("%Y-%m-%d"):
             info("오늘 distill 미실행 → nightly-distill 실행 권장")
     elif vault:
         warn(f"Vault 없음: {vault}  — init-vault 실행 권장")

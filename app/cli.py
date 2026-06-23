@@ -405,14 +405,17 @@ def promote_candidate(
     if result.kind == "knowledge" and not no_wiki and settings.wiki_enabled:
         from app.agents.wiki_agent import build_wiki_agent
         from pathlib import Path as _Path
+        from app.llm.base import LLMError, LLMNotConfiguredError
         promoted_folder = str(_Path(result.promoted_path).parent)
         typer.secho(f"\n  → wiki-ingest 자동 실행 중 (폴더: {promoted_folder})...", fg=typer.colors.CYAN)
         try:
             wiki_agent = build_wiki_agent(char_budget=settings.context_char_budget)
-            wiki_result = _handle_llm_errors(lambda: wiki_agent.ingest(folder_filter=promoted_folder))
+            wiki_result = wiki_agent.ingest(folder_filter=promoted_folder)
             typer.secho(f"  wiki 갱신: {wiki_result}", fg=typer.colors.CYAN)
-        except Exception as e:
+        except (LLMError, LLMNotConfiguredError) as e:
             typer.secho(f"  wiki-ingest 실패 (수동으로 실행하세요): {e}", fg=typer.colors.YELLOW)
+        except Exception as e:
+            typer.secho(f"  wiki-ingest 오류: {e}", fg=typer.colors.YELLOW)
 
 
 @app.command("apply-memory-patch")
