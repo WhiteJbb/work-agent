@@ -287,7 +287,10 @@ class CaptureAgent:
         파일 자체는 이미 00_Inbox/Raw/Attachments/에 저장돼 있어야 한다.
         """
         stamp = self._timestamp()
-        rel_attachment = str(file_path.relative_to(self.vault_dir)).replace("\\", "/")
+        try:
+            rel_attachment = str(file_path.relative_to(self.vault_dir)).replace("\\", "/")
+        except ValueError:
+            rel_attachment = file_path.name
         is_voice = "voice" in source.lower()
         kind_str = "voice" if is_voice else "image"
         note_slug = self._slug(f"{kind_str}-{file_path.stem[:30]}")

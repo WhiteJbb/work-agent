@@ -785,10 +785,10 @@ def push_digest(
         cutoff = (datetime.now() - timedelta(days=7 if weekly else 0)).strftime("%Y-%m-%d")
         if daily:
             today = datetime.now().strftime("%Y-%m-%d")
-            filtered = [c for c in all_candidates if c.created_at[:10] == today]
+            filtered = [c for c in all_candidates if (c.created_at or "")[:10] == today]
             header = f"**Daily Digest — {today}**"
         else:
-            filtered = [c for c in all_candidates if c.created_at[:10] >= cutoff]
+            filtered = [c for c in all_candidates if (c.created_at or "")[:10] >= cutoff]
             header = f"**Weekly Summary (최근 7일)**"
 
         by_kind: dict[str, list] = {}
