@@ -63,13 +63,6 @@ class Settings(BaseSettings):
 
     # --- Paths ---
     workspace_dir: str = Field(default="workspace", alias="WORKSPACE_DIR")
-    # 개별 경로 재정의 (비우면 workspace_dir 하위 기본 경로 사용)
-    drafts_dir: str = Field(default="", alias="DRAFTS_DIR")
-    blogs_dir: str = Field(default="", alias="BLOGS_DIR")
-    worklogs_dir: str = Field(default="", alias="WORKLOGS_DIR")
-    todos_dir: str = Field(default="", alias="TODOS_DIR")
-    portfolio_dir: str = Field(default="", alias="PORTFOLIO_DIR")
-    resume_dir: str = Field(default="", alias="RESUME_DIR")
 
     # --- Git ---
     git_log_limit: int = Field(default=20, alias="GIT_LOG_LIMIT")
@@ -88,34 +81,6 @@ class Settings(BaseSettings):
     @property
     def workspace_path(self) -> Path:
         return Path(self.workspace_dir).resolve()
-
-    @property
-    def docs_path(self) -> Path:
-        return self.workspace_path / "docs"
-
-    @property
-    def drafts_path(self) -> Path:
-        return Path(self.drafts_dir).resolve() if self.drafts_dir else self.workspace_path / "drafts"
-
-    @property
-    def blogs_path(self) -> Path:
-        return Path(self.blogs_dir).resolve() if self.blogs_dir else self.workspace_path / "blogs"
-
-    @property
-    def worklogs_path(self) -> Path:
-        return Path(self.worklogs_dir).resolve() if self.worklogs_dir else self.workspace_path / "worklogs"
-
-    @property
-    def todos_path(self) -> Path:
-        return Path(self.todos_dir).resolve() if self.todos_dir else self.workspace_path / "todos"
-
-    @property
-    def portfolio_path(self) -> Path:
-        return Path(self.portfolio_dir).resolve() if self.portfolio_dir else self.workspace_path / "portfolio"
-
-    @property
-    def resume_path(self) -> Path:
-        return Path(self.resume_dir).resolve() if self.resume_dir else self.workspace_path / "resume"
 
     @property
     def notion_mock_path(self) -> Path:
