@@ -23,8 +23,6 @@ _HELP = (
     "/context <주제> — Context Pack 조회\n"
     "/candidates — 후보 노트 목록\n"
     "/promote <경로> — 후보 노트 승격\n"
-    "/wiki <질문> — wiki 검색 (예: /wiki vLLM 설정)\n"
-    "/lint — wiki 건강 점검\n"
     "/worklog — 작업 회고\n"
     "/todo — 다음 할 일\n"
     "/portfolio — 포트폴리오 초안\n"
