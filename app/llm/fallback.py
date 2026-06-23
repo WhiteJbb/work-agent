@@ -32,7 +32,7 @@ class FallbackChain:
 
     def complete(self, prompt: str, system: str = "") -> str:
         """순서대로 provider를 시도. LLMError 발생 시 다음 provider로 fallback."""
-        last_exc: Exception | None = None
+        last_exc: LLMError | None = None
         for provider in self._providers:
             try:
                 result = provider.complete(prompt, system)
@@ -55,14 +55,14 @@ class FallbackChain:
         파싱 실패 시 같은 provider로 1회 재시도.
         그래도 실패하면 다음 provider로 fallback.
         """
-        last_exc: Exception | None = None
+        last_exc: LLMError | None = None
         for provider in self._providers:
             for attempt in range(2):
                 try:
                     result = provider.complete(prompt, system)
                     json.loads(result)  # JSON 유효성 검증
                     return result
-                except (json.JSONDecodeError, ValueError) as e:
+                except ValueError as e:
                     if attempt == 0:
                         logger.warning(
                             "[json-retry] %s JSON 파싱 실패, 동일 provider 재시도", provider.name

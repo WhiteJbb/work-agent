@@ -14,6 +14,7 @@ task_type별 라우팅:
 from __future__ import annotations
 
 import logging
+from typing import Callable
 
 from app.config import Settings
 from app.llm.base import LLMNotConfiguredError, LLMProvider
@@ -57,13 +58,21 @@ COMMAND_TASK_MAP: dict[str, str] = {
 def _make_gemini_lite(settings: Settings) -> GeminiProvider | None:
     if not settings.gemini_api_key:
         return None
-    return GeminiProvider(api_key=settings.gemini_api_key, model=settings.gemini_lite_model)
+    return GeminiProvider(
+        api_key=settings.gemini_api_key,
+        model=settings.gemini_lite_model,
+        max_retries=settings.llm_max_retries,
+    )
 
 
 def _make_gemini_flash(settings: Settings) -> GeminiProvider | None:
     if not settings.gemini_api_key:
         return None
-    return GeminiProvider(api_key=settings.gemini_api_key, model=settings.gemini_flash_model)
+    return GeminiProvider(
+        api_key=settings.gemini_api_key,
+        model=settings.gemini_flash_model,
+        max_retries=settings.llm_max_retries,
+    )
 
 
 def _make_openai(settings: Settings) -> OpenAICompatibleProvider | None:
@@ -100,7 +109,9 @@ def _make_ollama(settings: Settings) -> OllamaProvider | None:
     )
 
 
-_BUILDER_MAP: dict[str, object] = {
+_ProviderBuilder = Callable[[Settings], "LLMProvider | None"]
+
+_BUILDER_MAP: dict[str, _ProviderBuilder] = {
     "gemini_lite":  _make_gemini_lite,
     "gemini_flash": _make_gemini_flash,
     "openai":       _make_openai,
@@ -116,7 +127,7 @@ def _build_chain(provider_names: list[str], settings: Settings, task_type: str) 
         if builder is None:
             continue
         try:
-            p = builder(settings)  # type: ignore[call-arg]
+            p = builder(settings)
             if p is not None:
                 providers.append(p)
         except Exception as e:
