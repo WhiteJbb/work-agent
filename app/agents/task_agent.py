@@ -108,7 +108,7 @@ def _parse_task(text: str) -> tuple[str, str | None, str]:
         else:
             m = re.search(
                 r"(월요일|화요일|수요일|목요일|금요일|토요일|일요일"
-                r"|\bmonday|tuesday|wednesday|thursday|friday|saturday|sunday\b)",
+                r"|\b(?:monday|tuesday|wednesday|thursday|friday|saturday|sunday)\b)",
                 text, re.IGNORECASE,
             )
             if m:
@@ -116,7 +116,7 @@ def _parse_task(text: str) -> tuple[str, str | None, str]:
                 wd_key = wd_raw[:1] if wd_raw.endswith("요일") else wd_raw
                 target_wd = _WEEKDAY_MAP.get(wd_key) if len(wd_key) == 1 else _WEEKDAY_MAP.get(wd_raw)
                 if target_wd is not None:
-                    days_ahead = (target_wd - today.weekday()) % 7 or 7
+                    days_ahead = (target_wd - today.weekday()) % 7
                     target_date = today + timedelta(days=days_ahead)
 
     # 시간 추가

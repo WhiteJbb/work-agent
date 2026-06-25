@@ -108,15 +108,21 @@ class TaskService:
         if target is None:
             return None
 
+        expected = f"- [ ] {target.text}"
+        if target.due:
+            expected += f" 📅 {target.due}"
+
         lines = self._read_lines()
         new_lines: list[str] = []
         removed = False
         for line in lines:
-            s = line.strip()
-            if not removed and re.match(r"^- \[ \]", s) and target.text in s:
+            if not removed and line.strip() == expected:
                 removed = True
                 continue
             new_lines.append(line)
+
+        if not removed:
+            return None
 
         self._write_lines(new_lines)
 
