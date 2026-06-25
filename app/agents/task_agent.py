@@ -100,6 +100,10 @@ class TaskAgent:
                 message=f"{n}번 태스크를 찾지 못했습니다. (현재 {len(tasks)}개)\n/tasks 로 목록 확인",
             )
 
+        # 날짜 키워드가 없으면 기존 섹션 유지
+        if new_due is None and new_section == "언제든지":
+            new_section = old_task.section
+
         new_task = self.service.edit_task(n, new_text, new_due, new_section)
         if new_task is None:
             return TaskResult(ok=False, message=f"{n}번 태스크 수정에 실패했습니다.")

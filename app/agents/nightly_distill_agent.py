@@ -205,7 +205,14 @@ class NightlyDistillAgent:
         for f in files:
             try:
                 for line in f.read_text(encoding="utf-8").splitlines():
-                    m = re.match(r"^- \[x\] (.+)$", line.strip())
+                    # "(기한: ...) ✅ HH:MM" 서픽스를 제거해 태스크 텍스트만 추출
+                    m = re.match(
+                        r"^- \[x\] (.+?)(?:\s+\(기한:[^)]*\))?\s+✅\s+\d{2}:\d{2}\s*$",
+                        line.strip(),
+                    )
+                    if not m:
+                        # 타임스탬프 없는 구형 형식 호환
+                        m = re.match(r"^- \[x\] (.+)$", line.strip())
                     if m:
                         entries.append(m.group(1).strip())
             except OSError:

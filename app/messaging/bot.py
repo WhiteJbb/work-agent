@@ -121,6 +121,9 @@ class MessengerBot:
                     reply = self.media_handler.handle(msg)
                 else:
                     reply = "미디어 처리가 설정되지 않았습니다. 텍스트 메시지를 사용해 주세요."
+            elif msg.callback_query_id:
+                # 버튼 탭은 pending 확인 대화를 취소하지 않고 바로 명령으로 처리
+                reply = self.router.handle(msg.text)
             else:
                 reply = self._handle_text(msg.chat_id, msg.text)
 
@@ -132,9 +135,12 @@ class MessengerBot:
             ):
                 buttons = self._build_task_buttons()
                 if buttons:
-                    self.provider.send_with_buttons(msg.chat_id, reply, buttons)
-                    handled += 1
-                    continue
+                    try:
+                        self.provider.send_with_buttons(msg.chat_id, reply, buttons)
+                        handled += 1
+                        continue
+                    except Exception:
+                        pass  # 버튼 전송 실패 시 일반 메시지로 폴백
 
             self.provider.send(msg.chat_id, reply)
             handled += 1
