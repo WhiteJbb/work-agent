@@ -58,6 +58,59 @@ class TaskAgent:
             task=task,
         )
 
+    def delete(self, number_str: str) -> TaskResult:
+        try:
+            n = int(number_str.strip())
+        except ValueError:
+            return TaskResult(ok=False, message="번호를 입력해주세요. 예: /del 2")
+
+        task = self.service.delete_task(n)
+        if task is None:
+            total = len(self.service.list_tasks())
+            return TaskResult(
+                ok=False,
+                message=f"{n}번 태스크를 찾지 못했습니다. (현재 {total}개)\n/tasks 로 목록 확인",
+            )
+        return TaskResult(ok=True, message=f"삭제 완료\n~~{task.text}~~", task=task)
+
+    def edit(self, arg: str) -> TaskResult:
+        """`arg` = '2 새내용' 형식."""
+        parts = arg.strip().split(maxsplit=1)
+        if len(parts) < 2:
+            return TaskResult(
+                ok=False,
+                message="번호와 새 내용을 함께 입력해주세요.\n예: /edit 2 코드 리뷰 내일까지",
+            )
+        try:
+            n = int(parts[0])
+        except ValueError:
+            return TaskResult(
+                ok=False,
+                message="첫 번째 인자는 번호여야 합니다.\n예: /edit 2 코드 리뷰 내일까지",
+            )
+
+        new_raw = parts[1].strip()
+        new_text, new_due, new_section = _parse_task(new_raw)
+
+        tasks = self.service.list_tasks()
+        old_task = next((t for t in tasks if t.number == n), None)
+        if old_task is None:
+            return TaskResult(
+                ok=False,
+                message=f"{n}번 태스크를 찾지 못했습니다. (현재 {len(tasks)}개)\n/tasks 로 목록 확인",
+            )
+
+        new_task = self.service.edit_task(n, new_text, new_due, new_section)
+        if new_task is None:
+            return TaskResult(ok=False, message=f"{n}번 태스크 수정에 실패했습니다.")
+
+        due_str = f"\n기한: `{new_due}`" if new_due else ""
+        return TaskResult(
+            ok=True,
+            message=f"수정 완료 ✅\n~~{old_task.text}~~ → **{new_text}**\n**[{new_section}]**{due_str}",
+            task=new_task,
+        )
+
 
 # ── 날짜/섹션 파싱 ─────────────────────────────────────────────────────────
 

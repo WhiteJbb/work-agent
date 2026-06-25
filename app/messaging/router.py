@@ -16,6 +16,8 @@ _HELP = (
     "/task <내용>  — 할 일 추가 (날짜 자동 파싱)\n"
     "/tasks  — 할 일 목록 보기\n"
     "/done <번호>  — 완료 처리\n"
+    "/edit <번호> <새내용>  — 수정\n"
+    "/del <번호>  — 삭제\n"
     "\n"
     "**[ 매일 쓰는 명령 ]**\n"
     "/capture <내용>  — 메모·아이디어 즉시 저장\n"
@@ -87,6 +89,26 @@ class CommandRouter:
                 result = TaskAgent().done(arg)
             except RuntimeError as e:
                 return f"완료 처리 실패: {e}"
+            return result.message
+
+        if cmd in ("del", "delete", "rm"):
+            if not arg:
+                return "삭제할 번호를 함께 보내주세요.\n예: /del 2"
+            from app.agents.task_agent import TaskAgent
+            try:
+                result = TaskAgent().delete(arg)
+            except RuntimeError as e:
+                return f"삭제 실패: {e}"
+            return result.message
+
+        if cmd == "edit":
+            if not arg:
+                return "번호와 새 내용을 함께 보내주세요.\n예: /edit 2 코드 리뷰 내일까지"
+            from app.agents.task_agent import TaskAgent
+            try:
+                result = TaskAgent().edit(arg)
+            except RuntimeError as e:
+                return f"수정 실패: {e}"
             return result.message
 
         # ── 블로그 (WikiBlogAgent) ────────────────────────────────────

@@ -145,6 +145,39 @@ class TaskService:
 
         return target
 
+    def delete_task(self, number: int) -> Task | None:
+        """Active.md에서 태스크를 제거한다 (Done 기록 없음)."""
+        tasks = self.list_tasks()
+        target = next((t for t in tasks if t.number == number), None)
+        if target is None:
+            return None
+
+        expected = f"- [ ] {target.text}"
+        if target.due:
+            expected += f" 📅 {target.due}"
+
+        lines = self._read_lines()
+        new_lines: list[str] = []
+        removed = False
+        for line in lines:
+            if not removed and line.strip() == expected:
+                removed = True
+                continue
+            new_lines.append(line)
+
+        if not removed:
+            return None
+
+        self._write_lines(new_lines)
+        return target
+
+    def edit_task(self, number: int, new_text: str, new_due: str | None, new_section: str) -> Task | None:
+        """기존 태스크를 삭제하고 새 내용으로 다시 추가한다."""
+        deleted = self.delete_task(number)
+        if deleted is None:
+            return None
+        return self.add_task(new_text, new_due, new_section)
+
     def format_list(self, tasks: list[Task]) -> str:
         if not tasks:
             return "등록된 태스크가 없습니다.\n\n/task <내용> 으로 추가하세요."

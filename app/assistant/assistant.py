@@ -34,6 +34,8 @@ DESCRIPTIONS = {
     "task-add": "할 일 추가",
     "task-list": "할 일 목록 조회",
     "task-done": "할 일 완료 처리",
+    "task-delete": "할 일 삭제",
+    "task-edit": "할 일 수정",
 }
 
 # command → CommandRouter 슬래시 토큰(블로그 명령)
@@ -167,6 +169,26 @@ class Assistant:
                 result = TaskAgent().done(intent.arg)
             except RuntimeError as e:
                 return f"완료 처리 실패: {e}"
+            return result.message
+
+        if cmd == "task-delete":
+            if not intent.arg:
+                return "삭제할 번호를 말씀해 주세요. 예: '2번 삭제'"
+            from app.agents.task_agent import TaskAgent
+            try:
+                result = TaskAgent().delete(intent.arg)
+            except RuntimeError as e:
+                return f"삭제 실패: {e}"
+            return result.message
+
+        if cmd == "task-edit":
+            if not intent.arg:
+                return "번호와 새 내용을 말씀해 주세요. 예: '2번 코드 리뷰 내일까지로 바꿔'"
+            from app.agents.task_agent import TaskAgent
+            try:
+                result = TaskAgent().edit(intent.arg)
+            except RuntimeError as e:
+                return f"수정 실패: {e}"
             return result.message
 
         if cmd in _ROUTER_CMD:
